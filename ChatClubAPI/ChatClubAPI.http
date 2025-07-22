@@ -1,0 +1,6 @@
+@ChatClubAPI_HostAddress = http://localhost:5008
+
+GET {{ChatClubAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
