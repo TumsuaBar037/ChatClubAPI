@@ -22,7 +22,7 @@ namespace ChatClubAPI.Controllers
         public async Task<IActionResult> CreateAccount([FromForm] FileInputModel files)
         {
             //UploadLogic
-            return Ok("");
+            return Ok("test");
         }
     }
 }
