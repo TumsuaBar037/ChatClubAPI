@@ -1,10 +1,14 @@
+using ChatClubAPI.Data;
 using ChatClubAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddDbContext<ClubChatContext>(
+        options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 // Add services to the container.
 
 builder.Services.AddControllers();
