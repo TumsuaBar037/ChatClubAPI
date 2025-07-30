@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddScoped<DbService>();
+builder.Services.AddScoped<CalculateService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddDbContext<ClubChatContext>(
         options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

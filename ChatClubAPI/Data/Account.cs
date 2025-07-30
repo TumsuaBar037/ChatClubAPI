@@ -19,7 +19,7 @@ public partial class Account
 
     public int Role { get; set; }
 
-    public string CreateDate { get; set; }
+    public DateTime CreateDate { get; set; }
 
     public bool Active { get; set; }
 

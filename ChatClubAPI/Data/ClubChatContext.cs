@@ -36,9 +36,7 @@ public partial class ClubChatContext : DbContext
             entity.ToTable("Account");
 
             entity.Property(e => e.UserId).ValueGeneratedNever();
-            entity.Property(e => e.CreateDate)
-                .IsRequired()
-                .HasMaxLength(50);
+            entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(50);
