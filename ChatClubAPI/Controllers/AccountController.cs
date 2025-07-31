@@ -13,12 +13,14 @@ namespace ChatClubAPI.Controllers
         private readonly DbService _dbService;
         private readonly JwtTokenService _tokenService;
         private readonly CalculateService _calculateService;
+        private readonly IFileService _fileService;
 
-        public AccountController(DbService dbService, JwtTokenService tokenService, CalculateService calculateService)
+        public AccountController(DbService dbService, JwtTokenService tokenService, CalculateService calculateService, IFileService fileService)
         {
             _dbService = dbService;
             _tokenService = tokenService;
             _calculateService = calculateService;
+            _fileService = fileService;
         }
 
         [HttpPost("CreateAccount")]
@@ -31,6 +33,7 @@ namespace ChatClubAPI.Controllers
                 return NotFound("No nearby location found within the specified radius.");
             }
 
+            DateTime timestamp = DateTime.Now;
             Guid newGuid = Guid.NewGuid();
             TokenResponse tokenResponse = _tokenService.GenerateToken(newGuid, "user", "web");
 
@@ -42,11 +45,30 @@ namespace ChatClubAPI.Controllers
                 Name = files.Name,
                 Gender = files.Gender,
                 Role = 5,
-                CreateDate = DateTime.Now,
+                CreateDate = timestamp,
                 Active = true
             };
 
             bool createAccount = await _dbService.CreateAccount(account);
+
+            if (!createAccount)
+            {
+                return StatusCode(500, "Failed to create account. Please try again later.");
+            }
+
+            UserLocation userLocation = new UserLocation
+            {
+                UserId = newGuid,
+                Latitude = location.Latitude,
+                Longtitude = location.Longtitude,
+                LocationName = location.Name,
+                Timestamp = timestamp,
+                Event = 0
+            };
+
+            bool createUserLocation = await _dbService.CreateUserLocation(userLocation);
+            bool saved = await _fileService.SaveUserImageAsync(files.UserProfile, newGuid);
+
 
             return Ok(tokenResponse);
         }

@@ -5,9 +5,19 @@ namespace ChatClubAPI.Services
 {
     public partial class DbService
     {
-        public async Task<List<Location>> GetLocation()
+        public async Task<bool> CreateUserLocation(UserLocation userLocation)
         {
-            return await _context.Locations.AsNoTracking().ToListAsync();
+            try
+            {
+                await _context.UserLocations.AddAsync(userLocation);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
