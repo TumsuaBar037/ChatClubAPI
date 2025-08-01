@@ -1,6 +1,7 @@
 ﻿using ChatClubAPI.Data;
 using ChatClubAPI.Models;
 using ChatClubAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace ChatClubAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountController : ControllerBase
     {
         private readonly DbService _dbService;
@@ -23,6 +25,7 @@ namespace ChatClubAPI.Controllers
             _fileService = fileService;
         }
 
+        [AllowAnonymous]
         [HttpPost("CreateAccount")]
         public async Task<IActionResult> CreateAccount([FromForm] FileInput files)
         {
@@ -71,6 +74,12 @@ namespace ChatClubAPI.Controllers
 
 
             return Ok(tokenResponse);
+        }
+
+        [HttpGet("GetAccount/{id}")]
+        public async Task<Account?> GetAccount(Guid id)
+        {
+            return await _dbService.GetAccount(id);
         }
     }
 }

@@ -18,5 +18,10 @@ namespace ChatClubAPI.Services
                 return false;
             }
         }
+
+        public async Task<Account?> GetAccount(Guid id)
+        {
+            return await _context.Accounts.FindAsync(id);
+        }
     }
 }
