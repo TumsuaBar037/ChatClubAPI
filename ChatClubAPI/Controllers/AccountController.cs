@@ -4,6 +4,7 @@ using ChatClubAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChatClubAPI.Controllers
 {
@@ -80,6 +81,24 @@ namespace ChatClubAPI.Controllers
         public async Task<Account?> GetAccount(Guid id)
         {
             return await _dbService.GetAccount(id);
+        }
+
+        [HttpPost("RefreshToken")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
+        {
+            try
+            {
+                var result = _tokenService.RefreshToken(request.RefreshToken!);
+                return Ok(result);
+            }
+            catch (SecurityTokenException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Something went wrong." });
+            }
         }
     }
 }

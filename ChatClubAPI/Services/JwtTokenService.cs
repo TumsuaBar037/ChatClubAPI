@@ -77,5 +77,34 @@ namespace ChatClubAPI.Services
                 RefreshTokenExpires = refreshTokenExpires
             };
         }
+
+        public TokenResponse RefreshToken(string refreshToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            SecurityToken validatedToken;
+
+            var principal = tokenHandler.ValidateToken(refreshToken, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtConfig:Key"]!)),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = _config["JwtConfig:Issuer"],
+                ValidAudiences = _config.GetSection("JwtConfig:Audience").Get<string[]>(),
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero // ปิดการยืดเวลา
+            }, out validatedToken);
+
+            // ตรวจสอบว่ามี claim ชื่อ token_type = refresh
+            var tokenType = principal.FindFirst("token_type")?.Value;
+            if (tokenType != "refresh")
+                throw new SecurityTokenException("Invalid token type");
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = principal.FindFirst(ClaimTypes.Role)?.Value ?? "user"; // optional
+            var platform = ((JwtSecurityToken)validatedToken).Audiences.FirstOrDefault() ?? "web";
+
+            return GenerateToken(Guid.Parse(userId!), role, platform);
+        }
     }
 }
