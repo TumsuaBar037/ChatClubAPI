@@ -8,10 +8,6 @@ namespace ChatClubAPI.Data;
 
 public partial class ClubChatContext : DbContext
 {
-    public ClubChatContext()
-    {
-    }
-
     public ClubChatContext(DbContextOptions<ClubChatContext> options)
         : base(options)
     {
@@ -36,7 +32,6 @@ public partial class ClubChatContext : DbContext
             entity.ToTable("Account");
 
             entity.Property(e => e.UserId).ValueGeneratedNever();
-            entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -46,6 +41,7 @@ public partial class ClubChatContext : DbContext
             entity.Property(e => e.Username)
                 .IsRequired()
                 .HasMaxLength(50);
+            entity.Property(e => e.CreateDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Location>(entity =>
@@ -92,7 +88,6 @@ public partial class ClubChatContext : DbContext
         {
             entity.ToTable("UserToken");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.AccessToken).IsRequired();
             entity.Property(e => e.CreateAt).HasColumnType("datetime");
             entity.Property(e => e.RefreshToken).IsRequired();

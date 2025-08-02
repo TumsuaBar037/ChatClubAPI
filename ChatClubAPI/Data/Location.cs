@@ -17,5 +17,7 @@ public partial class Location
 
     public Guid OwnerId { get; set; }
 
+    public bool Active { get; set; }
+
     public virtual Account Owner { get; set; }
 }

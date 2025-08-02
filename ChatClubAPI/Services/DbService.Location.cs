@@ -9,5 +9,10 @@ namespace ChatClubAPI.Services
         {
             return await _context.Locations.AsNoTracking().ToListAsync();
         }
+
+        public async Task<Location?> GetLocation(int id)
+        {
+            return await _context.Locations.FindAsync(id);
+        }
     }
 }

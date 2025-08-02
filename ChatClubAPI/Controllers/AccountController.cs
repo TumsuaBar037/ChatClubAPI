@@ -73,14 +73,21 @@ namespace ChatClubAPI.Controllers
             bool createUserLocation = await _dbService.CreateUserLocation(userLocation);
             bool saved = await _fileService.SaveUserImageAsync(files.UserProfile, newGuid);
 
-
-            return Ok(tokenResponse);
+            return Ok(new SendLogin
+            {
+                AccessToken = tokenResponse.AccessToken,
+                RefreshToken = tokenResponse.RefreshToken,
+                LocationId = location.LocationId,
+                LocationName = location.Name,
+                Latitude = location.Latitude,
+                Longtitude = location.Longtitude
+            });
         }
 
         [HttpGet("GetAccount/{id}")]
-        public async Task<Account?> GetAccount(Guid id)
+        public async Task<IActionResult> GetAccount(Guid id)
         {
-            return await _dbService.GetAccount(id);
+            return Ok(await _dbService.GetAccount(id));
         }
 
         [HttpPost("RefreshToken")]
