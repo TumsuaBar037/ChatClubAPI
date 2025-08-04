@@ -60,6 +60,8 @@ namespace ChatClubAPI.Controllers
                 return StatusCode(500, "Failed to create account. Please try again later.");
             }
 
+            // event.
+            // 0 = login.
             UserLocation userLocation = new UserLocation
             {
                 UserId = newGuid,
@@ -106,6 +108,41 @@ namespace ChatClubAPI.Controllers
             {
                 return StatusCode(500, new { message = "Something went wrong." });
             }
+        }
+
+        [HttpGet("uploads/images/users/{userId}")]
+        public IActionResult GetUserImage(string userId)
+        {
+            var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "images", "users");
+
+            // หาไฟล์ที่มี userId เป็นชื่อไฟล์
+            var extensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+            foreach (var ext in extensions)
+            {
+                var filePath = Path.Combine(uploadsPath, $"{userId}{ext}");
+                if (System.IO.File.Exists(filePath))
+                {
+                    var contentType = GetContentType(ext);
+                    var fileBytes = System.IO.File.ReadAllBytes(filePath);
+                    return File(fileBytes, contentType);
+                }
+            }
+
+            // ถ้าไม่เจอไฟล์ ส่ง default image หรือ 404
+            return NotFound();
+        }
+
+        private string GetContentType(string extension)
+        {
+            return extension.ToLower() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".webp" => "image/webp",
+                _ => "application/octet-stream"
+            };
         }
     }
 }

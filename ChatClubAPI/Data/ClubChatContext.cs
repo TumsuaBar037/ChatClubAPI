@@ -66,7 +66,6 @@ public partial class ClubChatContext : DbContext
 
         modelBuilder.Entity<UserLocation>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Latitude)
                 .IsRequired()
                 .HasMaxLength(50);
