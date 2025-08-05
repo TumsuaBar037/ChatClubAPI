@@ -7,7 +7,7 @@ namespace ChatClubAPI.Data;
 
 public partial class Account
 {
-    public Guid UserId { get; set; }
+    public Guid Id { get; set; }
 
     public string Username { get; set; }
 
@@ -25,7 +25,11 @@ public partial class Account
 
     public virtual ICollection<Location> Locations { get; set; } = new List<Location>();
 
+    public virtual ICollection<UserInterest> UserInterests { get; set; } = new List<UserInterest>();
+
     public virtual ICollection<UserLocation> UserLocations { get; set; } = new List<UserLocation>();
+
+    public virtual ICollection<UserProfile> UserProfiles { get; set; } = new List<UserProfile>();
 
     public virtual ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
 }

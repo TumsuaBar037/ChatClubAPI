@@ -5,21 +5,13 @@ using System.Collections.Generic;
 
 namespace ChatClubAPI.Data;
 
-public partial class UserLocation
+public partial class UserInterest
 {
     public long Id { get; set; }
 
     public Guid AccountId { get; set; }
 
-    public string Latitude { get; set; }
-
-    public string Longtitude { get; set; }
-
-    public string LocationName { get; set; }
-
-    public DateTime Timestamp { get; set; }
-
-    public int Event { get; set; }
+    public string Description { get; set; }
 
     public virtual Account Account { get; set; }
 }

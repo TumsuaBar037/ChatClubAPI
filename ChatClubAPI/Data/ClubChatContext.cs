@@ -17,7 +17,11 @@ public partial class ClubChatContext : DbContext
 
     public virtual DbSet<Location> Locations { get; set; }
 
+    public virtual DbSet<UserInterest> UserInterests { get; set; }
+
     public virtual DbSet<UserLocation> UserLocations { get; set; }
+
+    public virtual DbSet<UserProfile> UserProfiles { get; set; }
 
     public virtual DbSet<UserToken> UserTokens { get; set; }
 
@@ -27,11 +31,10 @@ public partial class ClubChatContext : DbContext
 
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.HasKey(e => e.UserId);
-
             entity.ToTable("Account");
 
-            entity.Property(e => e.UserId).ValueGeneratedNever();
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.CreateDate).HasColumnType("datetime");
             entity.Property(e => e.Name)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -41,7 +44,6 @@ public partial class ClubChatContext : DbContext
             entity.Property(e => e.Username)
                 .IsRequired()
                 .HasMaxLength(50);
-            entity.Property(e => e.CreateDate).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Location>(entity =>
@@ -64,6 +66,16 @@ public partial class ClubChatContext : DbContext
                 .HasConstraintName("drgLocation");
         });
 
+        modelBuilder.Entity<UserInterest>(entity =>
+        {
+            entity.Property(e => e.Description).IsRequired();
+
+            entity.HasOne(d => d.Account).WithMany(p => p.UserInterests)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserInterests_Account");
+        });
+
         modelBuilder.Entity<UserLocation>(entity =>
         {
             entity.Property(e => e.Latitude)
@@ -77,10 +89,21 @@ public partial class ClubChatContext : DbContext
                 .HasMaxLength(50);
             entity.Property(e => e.Timestamp).HasColumnType("datetime");
 
-            entity.HasOne(d => d.User).WithMany(p => p.UserLocations)
-                .HasForeignKey(d => d.UserId)
+            entity.HasOne(d => d.Account).WithMany(p => p.UserLocations)
+                .HasForeignKey(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UserLocations_Account");
+        });
+
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.Property(e => e.AboutMe).IsRequired();
+            entity.Property(e => e.AvatarUrl).IsRequired();
+
+            entity.HasOne(d => d.Account).WithMany(p => p.UserProfiles)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserProfiles_Account");
         });
 
         modelBuilder.Entity<UserToken>(entity =>

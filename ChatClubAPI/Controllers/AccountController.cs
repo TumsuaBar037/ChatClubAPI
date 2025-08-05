@@ -41,16 +41,38 @@ namespace ChatClubAPI.Controllers
             Guid newGuid = Guid.NewGuid();
             TokenResponse tokenResponse = _tokenService.GenerateToken(newGuid, "user", "web");
 
+            // event.
+            // 0 = login.
+            UserLocation userLocation = new UserLocation
+            {
+                AccountId = newGuid,
+                Latitude = location.Latitude,
+                Longtitude = location.Longtitude,
+                LocationName = location.Name,
+                Timestamp = timestamp,
+                Event = 0
+            };
+
+            UserProfile userProfile = new UserProfile()
+            {
+                AccountId = newGuid,
+                Age = null,
+                AboutMe = "",
+                AvatarUrl = ""
+            };
+
             Account account = new Account()
             {
-                UserId = newGuid,
+                Id = newGuid,
                 Username = newGuid.ToString(),
                 Password = "",
                 Name = files.Name,
                 Gender = files.Gender,
                 Role = 5,
                 CreateDate = timestamp,
-                Active = true
+                Active = true,
+                UserLocations = new List<UserLocation> { userLocation },
+                UserProfiles = new List<UserProfile> { userProfile }
             };
 
             bool createAccount = await _dbService.CreateAccount(account);
@@ -60,26 +82,14 @@ namespace ChatClubAPI.Controllers
                 return StatusCode(500, "Failed to create account. Please try again later.");
             }
 
-            // event.
-            // 0 = login.
-            UserLocation userLocation = new UserLocation
-            {
-                UserId = newGuid,
-                Latitude = location.Latitude,
-                Longtitude = location.Longtitude,
-                LocationName = location.Name,
-                Timestamp = timestamp,
-                Event = 0
-            };
-
-            bool createUserLocation = await _dbService.CreateUserLocation(userLocation);
+            //bool createUserLocation = await _dbService.CreateUserLocation(userLocation);
             bool saved = await _fileService.SaveUserImageAsync(files.UserProfile, newGuid);
 
             return Ok(new SendLogin
             {
                 AccessToken = tokenResponse.AccessToken,
                 RefreshToken = tokenResponse.RefreshToken,
-                LocationId = location.LocationId,
+                LocationId = location.Id,
                 LocationName = location.Name,
                 Latitude = location.Latitude,
                 Longtitude = location.Longtitude
@@ -89,7 +99,13 @@ namespace ChatClubAPI.Controllers
         [HttpGet("GetAccount/{id}")]
         public async Task<IActionResult> GetAccount(Guid id)
         {
-            return Ok(await _dbService.GetAccount(id));
+            var account = await _dbService.GetAccount(id);
+            if (account is null)
+            {
+                return NotFound("Account not found.");
+            }
+
+            return Ok(account);
         }
 
         [HttpPost("RefreshToken")]
