@@ -108,6 +108,7 @@ namespace ChatClubAPI.Controllers
             return Ok(account);
         }
 
+        [AllowAnonymous]
         [HttpPost("RefreshToken")]
         public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
         {
