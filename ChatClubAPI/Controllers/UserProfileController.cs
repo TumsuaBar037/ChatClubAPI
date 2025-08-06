@@ -16,7 +16,7 @@ namespace ChatClubAPI.Controllers
         }
 
         [HttpGet("GetUserProfile/{accountId}")]
-        public async Task<IActionResult> GetAccount(Guid accountId)
+        public async Task<IActionResult> GetUserProfile(Guid accountId)
         {
             var userprofile = await _dbService.GetUserProfile(accountId);
             if (userprofile is null)
