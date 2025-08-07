@@ -19,7 +19,7 @@ namespace ChatClubAPI.Controllers
             _dbService = dbService;
         }
 
-        [HttpGet("UserInterest/{accountId}")]
+        [HttpGet("GetUserInterest/{accountId}")]
         public async Task<IEnumerable<UserInterest>> GetUserInterest(Guid accountId)
         {
             return await _dbService.GetUserInterest(accountId);

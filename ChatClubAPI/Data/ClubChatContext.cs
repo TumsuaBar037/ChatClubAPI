@@ -115,7 +115,7 @@ public partial class ClubChatContext : DbContext
             entity.Property(e => e.RefreshToken).IsRequired();
 
             entity.HasOne(d => d.User).WithMany(p => p.UserTokens)
-                .HasForeignKey(d => d.UserId)
+                .HasForeignKey(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UserToken_Account");
         });

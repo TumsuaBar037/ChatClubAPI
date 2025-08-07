@@ -61,6 +61,14 @@ namespace ChatClubAPI.Controllers
                 AvatarUrl = ""
             };
 
+            UserToken userToken = new UserToken()
+            {
+                AccountId = newGuid,
+                AccessToken = tokenResponse.AccessToken,
+                RefreshToken = tokenResponse.RefreshToken,
+                CreateAt = timestamp
+            };
+
             Account account = new Account()
             {
                 Id = newGuid,
@@ -72,7 +80,8 @@ namespace ChatClubAPI.Controllers
                 CreateDate = timestamp,
                 Active = true,
                 UserLocations = new List<UserLocation> { userLocation },
-                UserProfiles = new List<UserProfile> { userProfile }
+                UserProfiles = new List<UserProfile> { userProfile },
+                UserTokens = new List<UserToken> { userToken }
             };
 
             bool createAccount = await _dbService.CreateAccount(account);

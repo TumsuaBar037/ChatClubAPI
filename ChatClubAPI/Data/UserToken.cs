@@ -9,7 +9,7 @@ public partial class UserToken
 {
     public int Id { get; set; }
 
-    public Guid UserId { get; set; }
+    public Guid AccountId { get; set; }
 
     public string AccessToken { get; set; }
 
