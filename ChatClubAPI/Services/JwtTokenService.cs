@@ -106,5 +106,7 @@ namespace ChatClubAPI.Services
 
             return GenerateToken(Guid.Parse(userId!), role, platform);
         }
+
+
     }
 }

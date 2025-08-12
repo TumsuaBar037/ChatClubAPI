@@ -1,4 +1,5 @@
 ﻿using ChatClubAPI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChatClubAPI.Services
 {
@@ -22,6 +23,11 @@ namespace ChatClubAPI.Services
         public async Task<Account?> GetAccount(Guid id)
         {
             return await _context.Accounts.FindAsync(id);
+        }
+
+        public async Task<Account?> FindAccount(string username, string password)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(x => (!String.IsNullOrEmpty(x.Password)) && (x.Username == username && x.Password == password));
         }
     }
 }

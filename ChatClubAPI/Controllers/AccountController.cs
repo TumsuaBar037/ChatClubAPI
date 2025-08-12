@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using NuGet.Common;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ChatClubAPI.Controllers
 {
@@ -92,7 +95,7 @@ namespace ChatClubAPI.Controllers
             }
 
             //bool createUserLocation = await _dbService.CreateUserLocation(userLocation);
-            bool saved = await _fileService.SaveUserImageAsync(files.UserProfile, newGuid);
+            bool saved = await _fileService.SaveUserImageAsync(files.UserProfile!, newGuid);
 
             return Ok(new SendLogin
             {
@@ -123,7 +126,15 @@ namespace ChatClubAPI.Controllers
         {
             try
             {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(request.RefreshToken);
+                var claims = jwtToken.Claims;
+                var accountId = jwtToken.Claims
+    .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
                 var result = _tokenService.RefreshToken(request.RefreshToken!);
+
+
                 return Ok(result);
             }
             catch (SecurityTokenException ex)
@@ -134,6 +145,52 @@ namespace ChatClubAPI.Controllers
             {
                 return StatusCode(500, new { message = "Something went wrong." });
             }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("LoginCheck")]
+        public async Task<IActionResult> LoginCheck([FromBody] LoginRequest request)
+        {
+            Account? account = await _dbService.FindAccount(request.Username!, request.Password!);
+
+            if (account is null)
+            {
+                Unauthorized("Invalid credentials");
+            }
+
+            Location? location = await _calculateService.CheckLocation(request.Latitude, request.Longitude);
+
+            if (location is null)
+            {
+                return NotFound("No nearby location found within the specified radius.");
+            }
+
+            UserToken? userToken = await _dbService.GetUserToken(account!.Id);
+
+            try
+            {
+                TokenResponse newToken = _tokenService.RefreshToken(userToken!.RefreshToken!);
+                userToken.AccessToken = newToken.AccessToken;
+                userToken.RefreshToken = newToken.RefreshToken;
+                UpdateResult refreshToken = await _dbService.UpdateToken(userToken.Id, userToken);
+
+                return Ok(new SendLogin
+                {
+                    AccessToken = newToken.AccessToken,
+                    RefreshToken = newToken.RefreshToken,
+                    LocationId = location.Id,
+                    LocationName = location.Name,
+                    Latitude = location.Latitude,
+                    Longtitude = location.Longtitude
+                });
+            }
+            catch (Exception ex)
+            {
+
+            }
+            
+
+            return Ok("");
         }
 
         [HttpGet("uploads/images/users/{userId}")]

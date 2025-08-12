@@ -7,5 +7,6 @@ namespace ChatClubAPI.Controllers
     [ApiController]
     public class UserTokenController : ControllerBase
     {
+        
     }
 }
