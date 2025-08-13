@@ -30,6 +30,13 @@ namespace ChatClubAPI.Controllers
         }
 
         [AllowAnonymous]
+        [HttpGet("test")]
+        public async Task<IActionResult> Test()
+        {
+            return Ok("Test successful");
+        }
+
+        [AllowAnonymous]
         [HttpPost("CreateAccount")]
         public async Task<IActionResult> CreateAccount([FromForm] FileInput files)
         {
@@ -126,11 +133,14 @@ namespace ChatClubAPI.Controllers
         {
             try
             {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadJwtToken(request.RefreshToken);
-                var claims = jwtToken.Claims;
-                var accountId = jwtToken.Claims
-    .FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var principal = _tokenService.DecodeToken(request.RefreshToken!);
+                var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+                UserToken? userToken = await _dbService.GetUserToken(Guid.Parse(userId!));
+                TokenResponse newToken = _tokenService.RefreshToken(userToken!.RefreshToken!);
+                userToken.AccessToken = newToken.AccessToken;
+                userToken.RefreshToken = newToken.RefreshToken;
+                UpdateResult refreshToken = await _dbService.UpdateToken(userToken.Id, userToken);
 
                 var result = _tokenService.RefreshToken(request.RefreshToken!);
 
@@ -155,7 +165,7 @@ namespace ChatClubAPI.Controllers
 
             if (account is null)
             {
-                Unauthorized("Invalid credentials");
+                Unauthorized("Invalid credentials.");
             }
 
             Location? location = await _calculateService.CheckLocation(request.Latitude, request.Longitude);

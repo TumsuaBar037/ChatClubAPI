@@ -16,6 +16,14 @@ namespace ChatClubAPI.Services
             _config = config;
         }
 
+        public ClaimsPrincipal DecodeToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
+            return new ClaimsPrincipal(identity);
+        }
+
         public TokenResponse GenerateToken(Guid userid, string role, string platform)
         {
             var accessTokenExpires = DateTime.UtcNow.AddHours(_config.GetValue<int>("JwtConfig:TokenValidityHours"));
