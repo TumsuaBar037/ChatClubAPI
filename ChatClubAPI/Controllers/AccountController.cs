@@ -165,7 +165,7 @@ namespace ChatClubAPI.Controllers
 
             if (account is null)
             {
-                Unauthorized("Invalid credentials.");
+                return Unauthorized("Invalid credentials.");
             }
 
             Location? location = await _calculateService.CheckLocation(request.Latitude, request.Longitude);
