@@ -41,7 +41,7 @@ namespace ChatClubAPI.Controllers
 
         [AllowAnonymous]
         [HttpPost("CreateAccount")]
-        public async Task<IActionResult> CreateAccount([FromForm] FileInput files)
+        public async Task<IActionResult> CreateAccount([FromBody] FileInput files)
         {
             Location? location = await _calculateService.CheckLocation(files.Latitude, files.Longitude);
 
