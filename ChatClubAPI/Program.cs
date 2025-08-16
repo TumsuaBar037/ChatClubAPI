@@ -11,7 +11,6 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<DbService>();
 builder.Services.AddScoped<CalculateService>();
-builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddDbContext<ClubChatContext>(

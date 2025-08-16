@@ -104,18 +104,25 @@ namespace ChatClubAPI.Controllers
                 return StatusCode(500, "Failed to create account. Please try again later.");
             }
 
-            //bool createUserLocation = await _dbService.CreateUserLocation(userLocation);
-            bool saved = await _fileService.SaveUserImageAsync(files.UserProfile!, newGuid);
+            _ = await _fileService.SaveUserImageAsync(files.UserProfile!, newGuid);
 
-            return Ok(new SendLogin
+
+            // set cookies into fontend
+
+            var locationDataObj = new
             {
-                AccessToken = tokenResponse.AccessToken,
-                RefreshToken = tokenResponse.RefreshToken,
                 LocationId = location.Id,
                 LocationName = location.Name,
                 Latitude = location.Latitude,
                 Longtitude = location.Longtitude
-            });
+            };
+
+            string locationData = JsonConvert.SerializeObject(locationDataObj);
+
+            Response.Cookies.Append("NEARSIP_ACCESS", tokenResponse!.AccessToken!, CookieOptionsExtensions.DefaultOptions());
+            Response.Cookies.Append("NEARSIP_REFRESH", tokenResponse!.RefreshToken!, CookieOptionsExtensions.DefaultOptions());
+            Response.Cookies.Append("NEARSIP_LOCATION", locationData, CookieOptionsExtensions.DefaultOptions());
+            return Ok();
         }
 
         [HttpGet("GetAccount/{id}")]
@@ -171,35 +178,30 @@ namespace ChatClubAPI.Controllers
 
             UserToken? userToken = await _dbService.GetUserToken(account!.Id);
 
-            try
+            TokenResponse? newToken = await _tokenService.RefreshTokenAsync(userToken!.RefreshToken!);
+
+            if (newToken is null) 
             {
-                var newToken = await _tokenService.RefreshTokenAsync(userToken!.RefreshToken!);
-
-                // set cookies into fontend
-
-                var locationDataObj = new
-                {
-                    LocationId = location.Id,
-                    LocationName = location.Name,
-                    Latitude = location.Latitude,
-                    Longtitude = location.Longtitude
-                };
-
-                string locationData = JsonConvert.SerializeObject(locationDataObj);
-
-                Response.Cookies.Append("NEARSIP_ACCESS", newToken!.AccessToken!, CookieOptionsExtensions.DefaultOptions());
-                Response.Cookies.Append("NEARSIP_REFRESH", newToken!.RefreshToken!, CookieOptionsExtensions.DefaultOptions());
-                Response.Cookies.Append("NEARSIP_LOCATION", locationData, CookieOptionsExtensions.DefaultOptions());
-
-                return Ok();
+                return Unauthorized("Invalid refresh token.");
             }
-            catch (Exception ex)
+
+            // set cookies into fontend
+
+            var locationDataObj = new
             {
-                return StatusCode(500, new
-                {
-                    Message = "Failed to refresh token. Please try again later."
-                });
-            }
+                LocationId = location.Id,
+                LocationName = location.Name,
+                Latitude = location.Latitude,
+                Longtitude = location.Longtitude
+            };
+
+            string locationData = JsonConvert.SerializeObject(locationDataObj);
+
+            Response.Cookies.Append("NEARSIP_ACCESS", newToken!.AccessToken!, CookieOptionsExtensions.DefaultOptions());
+            Response.Cookies.Append("NEARSIP_REFRESH", newToken!.RefreshToken!, CookieOptionsExtensions.DefaultOptions());
+            Response.Cookies.Append("NEARSIP_LOCATION", locationData, CookieOptionsExtensions.DefaultOptions());
+
+            return Ok();
         }
 
         [HttpGet("uploads/images/users/{userId}")]
