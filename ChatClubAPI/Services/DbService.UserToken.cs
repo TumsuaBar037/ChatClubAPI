@@ -11,6 +11,12 @@ namespace ChatClubAPI.Services
             return await _context.UserTokens.FirstOrDefaultAsync(x => x.AccountId == accountId);
         }
 
+
+        public async Task<UserToken?> FindUserTokenByRefreshToken(string refreshToken)
+        {
+            return await _context.UserTokens.FirstOrDefaultAsync(x => x.RefreshToken == refreshToken);
+        }
+
         public async Task<UpdateResult> UpdateToken(int id, UserToken userToken)
         {
             if (id != userToken.Id)
@@ -35,5 +41,7 @@ namespace ChatClubAPI.Services
 
             return UpdateResult.Success;
         }
+
+       
     }
 }

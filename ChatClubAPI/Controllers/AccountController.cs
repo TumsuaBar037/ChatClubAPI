@@ -1,10 +1,13 @@
-﻿using ChatClubAPI.Data;
+﻿using Azure.Core;
+using ChatClubAPI.Data;
+using ChatClubAPI.Extensions;
 using ChatClubAPI.Models;
 using ChatClubAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using NuGet.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,11 +20,11 @@ namespace ChatClubAPI.Controllers
     public class AccountController : ControllerBase
     {
         private readonly DbService _dbService;
-        private readonly JwtTokenService _tokenService;
+        private readonly ITokenService _tokenService;
         private readonly CalculateService _calculateService;
         private readonly IFileService _fileService;
 
-        public AccountController(DbService dbService, JwtTokenService tokenService, CalculateService calculateService, IFileService fileService)
+        public AccountController(DbService dbService, ITokenService tokenService, CalculateService calculateService, IFileService fileService)
         {
             _dbService = dbService;
             _tokenService = tokenService;
@@ -49,7 +52,7 @@ namespace ChatClubAPI.Controllers
 
             DateTime timestamp = DateTime.Now;
             Guid newGuid = Guid.NewGuid();
-            TokenResponse tokenResponse = _tokenService.GenerateToken(newGuid, "user", "web");
+            TokenResponse tokenResponse = await _tokenService.GenerateTokensAsync(newGuid, "user", "web");
 
             // event.
             // 0 = login.
@@ -133,16 +136,7 @@ namespace ChatClubAPI.Controllers
         {
             try
             {
-                var principal = _tokenService.DecodeToken(request.RefreshToken!);
-                var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                UserToken? userToken = await _dbService.GetUserToken(Guid.Parse(userId!));
-                TokenResponse newToken = _tokenService.RefreshToken(userToken!.RefreshToken!);
-                userToken.AccessToken = newToken.AccessToken;
-                userToken.RefreshToken = newToken.RefreshToken;
-                UpdateResult refreshToken = await _dbService.UpdateToken(userToken.Id, userToken);
-
-                var result = _tokenService.RefreshToken(request.RefreshToken!);
+                var result = _tokenService.RefreshTokenAsync(request.RefreshToken!);
 
 
                 return Ok(result);
@@ -179,28 +173,33 @@ namespace ChatClubAPI.Controllers
 
             try
             {
-                TokenResponse newToken = _tokenService.RefreshToken(userToken!.RefreshToken!);
-                userToken.AccessToken = newToken.AccessToken;
-                userToken.RefreshToken = newToken.RefreshToken;
-                UpdateResult refreshToken = await _dbService.UpdateToken(userToken.Id, userToken);
+                var newToken = await _tokenService.RefreshTokenAsync(userToken!.RefreshToken!);
 
-                return Ok(new SendLogin
+                // set cookies into fontend
+
+                var locationDataObj = new
                 {
-                    AccessToken = newToken.AccessToken,
-                    RefreshToken = newToken.RefreshToken,
                     LocationId = location.Id,
                     LocationName = location.Name,
                     Latitude = location.Latitude,
                     Longtitude = location.Longtitude
-                });
+                };
+
+                string locationData = JsonConvert.SerializeObject(locationDataObj);
+
+                Response.Cookies.Append("NEARSIP_ACCESS", newToken!.AccessToken!, CookieOptionsExtensions.DefaultOptions());
+                Response.Cookies.Append("NEARSIP_REFRESH", newToken!.RefreshToken!, CookieOptionsExtensions.DefaultOptions());
+                Response.Cookies.Append("NEARSIP_LOCATION", locationData, CookieOptionsExtensions.DefaultOptions());
+
+                return Ok();
             }
             catch (Exception ex)
             {
-
+                return StatusCode(500, new
+                {
+                    Message = "Failed to refresh token. Please try again later."
+                });
             }
-            
-
-            return Ok("");
         }
 
         [HttpGet("uploads/images/users/{userId}")]
