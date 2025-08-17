@@ -122,7 +122,8 @@ namespace ChatClubAPI.Controllers
             Response.Cookies.Append("NEARSIP_ACCESS", tokenResponse!.AccessToken!, CookieOptionsExtensions.DefaultOptions());
             Response.Cookies.Append("NEARSIP_REFRESH", tokenResponse!.RefreshToken!, CookieOptionsExtensions.DefaultOptions());
             Response.Cookies.Append("NEARSIP_LOCATION", locationData, CookieOptionsExtensions.DefaultOptions());
-            return Ok();
+            
+            return NoContent();
         }
 
         [HttpGet("GetAccount/{id}")]
@@ -201,7 +202,7 @@ namespace ChatClubAPI.Controllers
             Response.Cookies.Append("NEARSIP_REFRESH", newToken!.RefreshToken!, CookieOptionsExtensions.DefaultOptions());
             Response.Cookies.Append("NEARSIP_LOCATION", locationData, CookieOptionsExtensions.DefaultOptions());
 
-            return Ok();
+            return Ok("Login success");
         }
 
         [HttpGet("uploads/images/users/{userId}")]

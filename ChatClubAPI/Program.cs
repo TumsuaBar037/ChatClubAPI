@@ -22,7 +22,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowNextJs", policy =>
     {
-        //policy.WithOrigins("https://localhost:3000") // IP Front END
+        //policy.WithOrigins("http://localhost:3000/") // IP Front END
         //      .AllowAnyHeader()
         //      .AllowAnyMethod()
         //      .AllowCredentials();
@@ -31,6 +31,13 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowCredentials();
     });
+});
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => false;
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+    options.Secure = CookieSecurePolicy.Always;
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -105,7 +112,7 @@ builder.Services.AddAuthentication(option =>
                         var cookieOptions = new CookieOptions
                         {
                             HttpOnly = true,
-                            Secure = false,
+                            Secure = true,
                             SameSite = SameSiteMode.None,
                             Expires = DateTime.UtcNow.AddDays(7),
                             Path = "/"
@@ -114,7 +121,7 @@ builder.Services.AddAuthentication(option =>
                         var refreshCookieOptions = new CookieOptions
                         {
                             HttpOnly = true,
-                            Secure = false,   
+                            Secure = true,   
                             SameSite = SameSiteMode.None,
                             Expires = DateTime.UtcNow.AddDays(7),
                             Path = "/"
